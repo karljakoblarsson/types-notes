@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jakob Larsson jakob@karljakoblarsson.com">
+  <title>Types for Programs and Proofs - DAT350</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="pandoc.css">
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<header>
+<h1 class="title">Types for Programs and Proofs - DAT350</h1>
+<h2 class="author">Jakob Larsson <script type="text/javascript">
+<!--
+h='&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#106;&#x61;&#x6b;&#x6f;&#98;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#106;&#x61;&#x6b;&#x6f;&#98;&#32;&#x61;&#116;&#32;&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Lp1 2017</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#lecture-4---introduction-to-operational-semantics">Lecture 4 - Introduction to operational semantics</a><ul>
+<li><a href="#history">History</a></li>
+<li><a href="#how-to-represent-programs">How to represent programs</a><ul>
+<li><a href="#arithmetic-expressions">Arithmetic expressions</a></li>
+<li><a href="#in-agda">In Agda</a></li>
+<li><a href="#how-to-prove-an-expression">How to prove an expression</a></li>
+<li><a href="#denotational-semantics">Denotational Semantics</a></li>
+<li><a href="#operational-semantics">Operational semantics</a></li>
+<li><a href="#normal-form">Normal form</a></li>
+</ul></li>
+<li><a href="#several-steps-of-evalutation">Several steps of evalutation</a><ul>
+<li><a href="#by-induction-on-e">By induction on e</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="lecture-4---introduction-to-operational-semantics">Lecture 4 - Introduction to operational semantics</h1>
+<p>Based on Chapter 3 Pierces book.</p>
+<p>The main application is correctness of programs. The problem is how to specify programs in a mathmatically precise way.</p>
+<p>The usual tools i math, e.g. anlysis, are not at all suited to hande discreet object such as programs.</p>
+<h2 id="history">History</h2>
+<p>Document, which is important for modularity. Operational semantics can be represented nicely in interactive theorem provers.</p>
+<p>Two different kinds of interactive theorem provers. Either based on higher order logic, such as: HOL, Isabelle. Or based on Type theory, such as: Agda, Coq, Idris, Lean.</p>
+<p>The difference are that tye theoretic provers represent proofs explicitly.</p>
+<p>CompCert by X. Leroy is a provably coorect C-compiler. CoteML developed here by M. Myrem a complete and correct ML-language.</p>
+<h2 id="how-to-represent-programs">How to represent programs</h2>
+<h3 id="arithmetic-expressions">Arithmetic expressions</h3>
+<p>Are represented as an abstract syntax tree. It maps to a data type in Agda.</p>
+<p>Ex: <code>e := const n | add e e | mult e e</code></p>
+<p>One of the earliest uses of this representation was Gödel in his incompletness proof. (1930)</p>
+<p>LISP (McCarthy 1958) builds LISP using the idea of an AST.</p>
+<h3 id="in-agda">In Agda</h3>
+<pre class="agda"><code>-- Nat - the set of natural numbers
+exp : Set
+const : Nat → exp
+add : exp → exp → exp
+mult : exp → exp → exp</code></pre>
+<h3 id="how-to-prove-an-expression">How to prove an expression</h3>
+<p>Use induction. E.g. to prove <span class="math">\(e C(e)\)</span><span class="math">\[
+a: ∀n C(const n) \\
+b: ∀e₀e₁ C(e₀) → C (e₁) → C(add e₀ e₁) \\
+c: ∀e₀e₁ C(e₀) → C (e₁) → C(mult e₀ e₁) \\
+\]</span></p>
+<p><span class="math">\(a: (n : Nat) → C(const n)\)</span> <span class="math">\[
+f(const n) = a n
+f(add e₀ e₁) = b (f e₀) (f e₁)
+f(mult e₀ e₁) = c (f e₀) (f e₁)
+\]</span></p>
+<p>Define <span class="math">\(f\)</span> by pattern-matching and recursion.</p>
+<p>Then we prove <span class="math">\(C(e)\)</span>by induction on<span class="math">\(e\)</span>.</p>
+<h4 id="proof">Proof</h4>
+<p>On expressions we can define <em>functions</em>, ex:</p>
+<pre class="agda"><code>depth : exp → Nat
+depth(const n) = 1
+depth(add/mult e₀ e₁) = 1 + max(depth e₀, depth e₁)
+
+size : exp → Nat
+size(const n) = 1
+size(add/mult e₀ e₁) = 1 + size e₀ + size e₁)</code></pre>
+<p><span class="math">\(∀e depth e ≤ size e\)</span></p>
+<pre class="agda"><code>_+_ : Nat → Nat → Nat -- function add constructor
+_≤_ : Nat → Nat → Set
+max : Nat → Nat → Set</code></pre>
+<h3 id="denotational-semantics">Denotational Semantics</h3>
+<p>Three different kinds of semantics: Operational, Denotational, Axiomatic. In denotational semantics we try to build &quot;meaning&quot; fo a program, or the &quot;value&quot;. We want to define the function <code>val</code>, in this case: <code>val : Exp → Nat</code>.</p>
+<p>We assume the have already defined <em>+</em> and <em>×</em>.</p>
+<pre class="agda"><code>value (const n) = n
+value (add e₀ e₁) = (value e₀) + (value e₁)
+value (mult e₀ e₁) = (value e₀) × (value e₁)</code></pre>
+<p>Denotational semantics are really nice when it's possible to define the value. However this is often not &quot;possible&quot; or at least very hard.</p>
+<h3 id="operational-semantics">Operational semantics</h3>
+<p>How to mathematically represent the evaluation of a program?</p>
+<p><span class="math">\(e ↦ e&#39;\)</span> One-step evaluation. A binary relation of expressions</p>
+<pre class="agda"><code>_↦_a : exp → exp → Set</code></pre>
+<p>The left-rule of addition. <span class="math">\[L_add = \frac{ e₀ ↦ e₀&#39; }{ add e₀ e₁ → add e₀&#39; e₁}\]</span></p>
+<p>The rigth-rule of addition. <span class="math">\[R_add = \frac{ e₁ ↦ e₁&#39; }{ add (const n) e₁ → add (const n) e₁&#39;}\]</span></p>
+<p>The rigth-rule of addition. <span class="math">\[D_add = \frac{}{ add (const n) (const m) ↦ const (n+m)}\]</span></p>
+<p>Note that there are no rules for <span class="math">\(const n ↦\)</span></p>
+<p>There are analougus rules for multiplication.</p>
+<p>We can use this to reason about the <em>cost</em> of computation.</p>
+<p>The one-step evaluation <em>↦</em> is a relation. It is also a proposition. In Agda:</p>
+<pre class="agda"><code>e ↦ e&#39; : Set</code></pre>
+<h3 id="normal-form">Normal form</h3>
+<p>En expression/term is in normal form when it can not be evaluated further. <span class="math">\(e\)</span> normal form <span class="math">\(\textlnot ∃e&#39; e↦e&#39;\)</span></p>
+<p>Theorem: $e $ normal form → $ e$ value.</p>
+<pre class="agda"><code>isValue : exp → Bool
+isValue (const n ) = true
+isValue _ = false</code></pre>
+<p>If <span class="math">\(e\)</span>is not a value → $ e $ is not in formal form.$ e $not a value → $ ∃e' (e → e')$</p>
+<p>PBI: (Proof by induction)</p>
+<p>Case by case.</p>
+<p><span class="math">\[(1) e = cont n \]</span></p>
+<p>$C(e) $ is of the form $ ⊥ → …$ hence is it valid.</p>
+<pre class="agda"><code>⊥ : Set
+⊤ : Set
+
+isValue (const n) = ⊤
+isValue _ = ⊥</code></pre>
+<p><span class="math">\[(2) e = add eₒ e₁\]</span></p>
+<p>By case <span class="math">\(e₀\)</span></p>
+<p>It was a long time before people cpuld reason about programs in this precise way. The problem was to find the right formulation.</p>
+<h2 id="several-steps-of-evalutation">Several steps of evalutation</h2>
+<p><span class="math">\(e ↦* e&#39;\)</span> means that <span class="math">\(e\)</span> reduces in several steps to<span class="math">\(e&#39;\)</span></p>
+<p>A chain for evaluation <span class="math">\(↦ e ↦\)</span>.</p>
+<p>One possible definition</p>
+<pre class="agda"><code>_↦*_ : exp → exp → Set</code></pre>
+<p>Two constructors:</p>
+<p><span class="math">\[\frac{}{ e ↦* e&#39; }\]</span></p>
+<p><span class="math">\[\frac{ e ↦ e&#39;   e&#39; ↦* e&#39;&#39;}{ e ↦* e&#39;&#39; }\]</span></p>
+<p><span class="math">\(↦*\)</span> is called reflexive transitive closure of <span class="math">\(↦\)</span>. It's a genral definiton for any given definition of <span class="math">\(↦\)</span>.</p>
+<p>Proposition: if <span class="math">\(e ↦* e&#39;\)</span> and <span class="math">\(e&#39; ↦* e&#39;&#39;\)</span> → <span class="math">\(e ↦* e&#39;&#39;\)</span>.</p>
+<p>It is a valid rule (but not by definition). An admissible rule.</p>
+<p>This expresses that the relation ↦* is transitive.</p>
+<p>Theorem (Normalization): $∀e ∃e' e ↦* e' ∧ e' $ is a value.$ ∀e ∃n e ↦* const n $</p>
+<pre class="agda"><code>val : exp Nat</code></pre>
+<p><span class="math">\(∀e e ↦* const (val e)\)</span></p>
+<p>This connects denatitional and operational semantics. The <code>val</code> function is from denotational semantics and the <span class="math">\(↦*\)</span> is from operational.</p>
+<h3 id="by-induction-on-e">By induction on e</h3>
+<p>(This is nice to do in Agda)</p>
+<ul>
+<li><p>$e = const n $ and $ val e = n $ and the rule $ $</p></li>
+<li><p>$e = add e₀ e₁ $ by IH: $ e₀ ↦* const (val e₀) $ $ e₁ ↦* const (val e₁)$</p></li>
+</ul>
+<h4 id="lemma-1">Lemma 1</h4>
+<p><span class="math">\[\frac{ e₀ ↦* e₀&#39; } { add e₀ e₁ ↦* add e₀&#39; e₁ }\]</span></p>
+<h4 id="lemma-2">Lemma 2</h4>
+<p><span class="math">\[\frac{ e₁ ↦* e₁&#39; } { add (const n) e₁ ↦* add (const n) e₁&#39; }\]</span></p>
+<ul>
+<li><span class="math">\(e ↦* add (const (val e₀)) e₁\)</span></li>
+<li><span class="math">\(↦* add (const (val e₀)) (val e₁)\)</span></li>
+<li><span class="math">\(↦ add (const (val e₀) (val e₁))\)</span></li>
+</ul>
+<p>Both lemmas are examples of admissible rules.</p>
+<p>Basic rules corresponds to constructors. Admissible rules correspond to functions.</p>
+</body>
+</html>

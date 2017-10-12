@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jakob Larsson jakob@karljakoblarsson.com">
+  <title>Types for Programs and Proofs - DAT350</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="pandoc.css">
+</head>
+<body>
+<header>
+<h1 class="title">Types for Programs and Proofs - DAT350</h1>
+<h2 class="author">Jakob Larsson <script type="text/javascript">
+<!--
+h='&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#106;&#x61;&#x6b;&#x6f;&#98;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#106;&#x61;&#x6b;&#x6f;&#98;&#32;&#x61;&#116;&#32;&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Lp1 2017</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#lecture-1">Lecture 1</a><ul>
+<li><a href="#what-are-types">What are types?</a></li>
+<li><a href="#purpose-of-types">Purpose of types</a><ul>
+<li><a href="#type-chincking">Type chincking</a></li>
+</ul></li>
+<li><a href="#agda">Agda</a><ul>
+<li><a href="#dependent-type">Dependent type</a></li>
+<li><a href="#termination-checking">Termination checking</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<!--Administrative stuff-->
+<!------------------------>
+<!--https://www.cse.chalmers.se/edu/year/2017/course/DAT350/-->
+<!--- Take home exam 2017/10/17 08:00 – 2017-10-20 12:00-->
+<!--- Presentation of one advanced topic, a chapter of the book or a research-->
+<p><!--article. You also need to opposite an other talk.--> <!--- Home work, is optional for bouns points--> <!--- Oral exam fro grade 4 or 5.--></p>
+<h1 id="lecture-1">Lecture 1</h1>
+<p>There are many techniques for improving software quality, both from software engineering and computer science.</p>
+<p>In this course we will look at a programming language designed for correctness: Agda. Along with mathematical techniques for specifying and reasoning about properties about programs and tools used to validate thoose properties.</p>
+<h2 id="what-are-types">What are types?</h2>
+<p>Types are not nessescary, assembly dosen't have types.</p>
+<p>This is a sort of continum of more and more advaced and powerful types of types:</p>
+<ul>
+<li>Int, char – eg Fortran</li>
+<li>Types of functions, objects, reference, records – eg Simula</li>
+<li>Recursive types – Functional languages.</li>
+<li>Polymorphic types</li>
+<li>Abstract types</li>
+<li>Dependent types</li>
+<li>Subtypes</li>
+<li>…</li>
+</ul>
+<p>Typed functional programming languages: - Haskell – lazy - Ocaml, SML – strict These have recursive, polymorphic and abstract types.</p>
+<h2 id="purpose-of-types">Purpose of types</h2>
+<ul>
+<li><p>Specification In some ways types are a lightweight specification of the program. And a runnable documentation of the programmers intent.</p></li>
+<li><p>Bug-finding</p></li>
+<li><p>Optimization To reserve the nessescary abount om memory but not more.</p></li>
+</ul>
+<h3 id="type-chincking">Type chincking</h3>
+<ul>
+<li>Correct number of function arguments</li>
+<li>Apply function to the wrong type</li>
+<li>Use of undeclared variables</li>
+<li>Division by zero</li>
+<li>Array indices out of bounds</li>
+<li>Non-terminationg recursion</li>
+<li>Sorting algorithms that don't sort</li>
+</ul>
+<p>Programming languages are different, every languages checks a different subset.</p>
+<p>The usefulness of this depends on the richness of the type system.</p>
+<p>Types can enforce abstractions and modularity.</p>
+<p>You can use Agda as an interactive proof system for logic system, including predicative logic.</p>
+<h2 id="agda">Agda</h2>
+<p>Agda is a functional language with dependent types. The big picture is similar to Haskell or ML. (Haskell has generalized abstract types witch is similar to depentent types)</p>
+<h3 id="dependent-type">Dependent type</h3>
+<blockquote>
+<p>Vect A n A vector witn n elements of type A. Depends on the type A:Set(type of &quot;small types&quot;) and length n:Nat.</p>
+</blockquote>
+<h3 id="termination-checking">Termination checking</h3>
+<p>You can only write programs with terminates. But it is possible to turn of the termination checker.</p>
+<p>These two features are _ for Agda and makes it possible to use as a proof system.</p>
+<p>These two things makes it possible to use the Curry-Howard identification. &gt; proposition (formula) =&gt; types</p>
+<p>In the 1930s it was discovered that simple types can encode propositional logic. Curry-Howard was found quite late and extended type system to be able to encode predicative logic. Martin-Löf (1972) got the idea that this could be used as a programming language. The first systemes in 1980s started at Cornell and Chalmers.</p>
+<p>The current version of Agda started in 2005.</p>
+<p>The premiere way to develop Agda is with Emacs as an interface. (damn it) There is a way to do programming and proving with Agda by pointing and clicking.</p>
+<p>(Is there a way to start the programming in a very flexible language like JS and then gradually specify more and more in a very rich type system like Agda? A big but really interesting question.)</p>
+<p>Agda has a nice mixedfix syntax and good unicode support.</p>
+<p>Each file in Agda has to be a module, and in a file with the same name as the module.</p>
+<pre class="agda"><code>module Bool2017 where
+
+-- Definition of bool in Haskell: data Bool = True | False
+-- You need to declare it as a small type. There are bigger types so it needs to
+-- be explicit defined.
+-- An empty type is a proposition with no proof. Which of course is false.
+-- data Bool : Set where
+
+data Bool : Set where
+  -- Constructors with lowercase compared to Haskell. A constructor can take
+  -- a more complex type. Type def is a single colon and cons is a double.
+  -- (flipped compared to Haskell)
+  true : Bool
+  false : Bool
+
+not : Bool → Bool
+-- This is ok in Agda, to say that we don&#39;t know what the expression should be.
+-- ^c^l Load. ^c^c create pattern match
+not b = ?
+-- Run ^c^c
+not true = { }0
+not false = { }1
+-- Fill in the definition
+not true = false
+not false = true
+-- ^c^space &quot;give&quot; (fill in hole by complete term)
+
+notnot b = not (not b)
+
+_&amp;&amp;_ : Bool → Bool → Bool -- Declare an infix operator. You need spaces around
+-- the operator when using.
+b &amp;&amp; b&#39; = b&#39;
+b &amp;&amp; true = b
+b &amp;&amp; false = false
+
+infixl 20 _&amp;&amp;_ -- Declare the precedence between 0 and 100. Infixl for left
+associative, infixr for right assoc.
+
+in_then_else : Bool → Bool → Bool → Bool
+if b then c else c&#39; =
+if true then c else c&#39; = c
+if false then c else c&#39; = c&#39;
+</code></pre>
+<p>In Agda there is no built in integers. Agda is built for proving and from that view integers are quite complex. It is not obvious how use binary numbers.</p>
+<pre><code>data nat : Set where
+  zero : Nat
+  succ : Nat → Nat
+
+one = succ zero
+two = succ one</code></pre>
+<p>You can get decimal notation and machine artihmetic.</p>
+</body>
+</html>

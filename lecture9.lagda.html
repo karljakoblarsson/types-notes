@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jakob Larsson jakob@karljakoblarsson.com">
+  <title>Types for Programs and Proofs - DAT350</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="pandoc.css">
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<header>
+<h1 class="title">Types for Programs and Proofs - DAT350</h1>
+<h2 class="author">Jakob Larsson <script type="text/javascript">
+<!--
+h='&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#106;&#x61;&#x6b;&#x6f;&#98;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#106;&#x61;&#x6b;&#x6f;&#98;&#32;&#x61;&#116;&#32;&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Lp1 2017</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#lecture-9">Lecture 9</a><ul>
+<li><a href="#cbn">CBN</a></li>
+<li><a href="#closures">Closures</a></li>
+<li><a href="#progress-theorem">Progress Theorem:</a></li>
+<li><a href="#preservation-theorem">Preservation Theorem:</a></li>
+<li><a href="#combined-progress-and-preservation">Combined Progress and Preservation:</a></li>
+<li><a href="#normalization-theorem">Normalization Theorem:</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="lecture-9">Lecture 9</h1>
+<p>(Chapter 9 &amp; 12)</p>
+<p>Last time we looked at simply typed λ-calculus.</p>
+<p>Now Higher Order Logic:</p>
+<p><span class="math">\[
+∀x  p(x) = ∀(λ(x : T) p x) = ∀ p \\
+∃x   p(x) = ∃p
+\]</span></p>
+<pre class="pseudo"><code>∃ : (Nat → Bool) → Bool
+∃p = true if there exists an n such that p(n) = true
+     false if for all n: p(n) = false</code></pre>
+<p><span class="math">\[
+∀p = \text{not} (∃ (λ (x : T) \text{not}(p(x)))
+\]</span></p>
+<pre class="pseudo"><code>∃ p = if p(0) == true then true else ∃(λ (n : Nat) p (n+1))</code></pre>
+<p>If <code>p</code> is always false the program <em>loops</em>.</p>
+<pre><code>Π : (T → Set) → Set
+Π f = ?
+
+-- Π (x : T)(p x) is a type of proof, not a boolean.
+-- Everything is computable in Agda.
+
+-- data Σ (x : T) P x
+-- ( a , b )  a : T  b : P a</code></pre>
+<pre><code>Types A ::= Bool | A → A
+
+Γ  partial function Var → (Maybe) Types</code></pre>
+<p><span class="math">\(Γ ⊢ t. A\)</span></p>
+<p><span class="math">\(\frac{Γ(x) → A}{Γ ⊢ x : A}\)</span> <span class="math">\(\frac{Γ ⊢ t. A → B   Γ ⊢ u : A}{ Γ ⊢ t u : B}\)</span> <span class="math">\(\frac{Γ x : A ⊢ t. B}{ Γ ⊢ λ(x : A) t. A → B}\)</span></p>
+<h3 id="cbn">CBN</h3>
+<p><span class="math">\(\frac{t₀ ↦ t₀&#39;}{t₀ t₁ ↦ t₀&#39; t₁}\)</span> <span class="math">\(\frac{}{ (λ(x : A) t) t₁ ↦ t(x/t₁)}\)</span> <code>v ::= true | false |  λ(x : A) t</code></p>
+<p><code>Γ ::= ) | Γ . A</code> <span class="math">\(\frac{Γ ⊢ t A → B   Γ ⊢ u : A}{ Γ ⊢ t u : B}\)</span> <span class="math">\(\frac{Γ . A ⊢ t : B}{Γ ⊢ λA t : A → B}\)</span> <span class="math">\(\frac{}{Γ . A ⊢ 0 . A}\)</span> <span class="math">\(\frac{Γ ⊢ n : A}{Γ . B ⊢ n+1 : A}\)</span></p>
+<h3 id="closures">Closures</h3>
+<pre><code>-- A closure is defined by: 
+c ::= t ρ | c c | true | false
+ρ :: = ) | ρ, c
+v ::= (λ A t) ρ | true | false</code></pre>
+<p><span class="math">\(\frac{c₀ ↦ c₀&#39;}{c₀ c₁ ↦ c₀&#39; c₁}\)</span> <span class="math">\(\frac{}{(λ A:t) ρ c ↦ t( ρ, c)}\)</span> <span class="math">\(\frac{}{(t₀ t₁) ρ ↦ (t₀ ρ)(t₁ ρ)}\)</span> <span class="math">\(\frac{ \frac{}{O(ρ, c) ↦ c} }{(m+1)( ρ, c) ↦ n ρ}\)</span></p>
+<p>This completely defines the evaluation of simply typed λ-calculus without using any predefined operations like substitution. Which is nice.</p>
+<p>$c : A $ <span class="math">\(ρ : Γ\)</span></p>
+<p><span class="math">\(\frac{}{() : ()}\)</span></p>
+<p><span class="math">\(\frac{ρ : Γ  c : A}{(ρ, c) : Γ . A}\)</span></p>
+<p><span class="math">\(\frac{Γ ⊢ t : A  ρ : Γ}{ t ρ : A}\)</span> <span class="math">\(\frac{ cₐ : A → B   c₁ . A}{ c₀ c₁ : B}\)</span></p>
+<p><span class="math">\(\frac{}{true : Bool}\)</span> <span class="math">\(\frac{}{false : Bool}\)</span></p>
+<h3 id="progress-theorem">Progress Theorem:</h3>
+<p>If <span class="math">\(c : A\)</span> then <span class="math">\(c\)</span> is a value <span class="math">\(∨ ∃c&#39;    c ↦ c\)</span>. It's proved by induction.</p>
+<h3 id="preservation-theorem">Preservation Theorem:</h3>
+<p>If <span class="math">\(c : A\)</span> and <span class="math">\(c ↦ c&#39;\)</span> then <span class="math">\(c&#39; : A\)</span>.</p>
+<p>But we don't know that the computation terminates.</p>
+<p>The proof is again by induction.</p>
+<p>Substitution is actually really complicated to implement on a computer, since there are a lot of edge cases. Therefore the presentation above is good since it does not use substitution.</p>
+<h3 id="combined-progress-and-preservation">Combined Progress and Preservation:</h3>
+<p><span class="math">\(c : A   c ↦ c&#39;\)</span> then <span class="math">\(c&#39; : A\)</span></p>
+<h4 id="collary">Collary:</h4>
+<p>If <span class="math">\(c : Bool\)</span> and $ c ↦* v$ then <span class="math">\(v =\)</span> true or <span class="math">\(v =\)</span> false. The proof uses preservation.</p>
+<h3 id="normalization-theorem">Normalization Theorem:</h3>
+<p>If <span class="math">\(c : A\)</span> then <span class="math">\(∃v   c ↦* v\)</span>. (This is proven in Chapter 12.) The proof uses a technique which is fundamental in software foundations which is called the method of logical relation or induction on types.</p>
+<p>It will not work to do induction on <span class="math">\(c : A\)</span>. Instead we define a predicate <span class="math">\(R_A(c)\)</span>, where <span class="math">\(c : A\)</span>, by induction on <span class="math">\(A\)</span>.</p>
+<p><span class="math">\[
+R_{Bool}(c)   ∃ v (c ↦* v) \\
+R_{A→B}(c)   ∀c₁ : A R_A(c₁) ⇒ R_B(c c₁)
+\]</span></p>
+<p>The goal is the show that if <span class="math">\(c : A\)</span> then <span class="math">\(R_A(c)\)</span> holds.</p>
+<h4 id="lemma-1">Lemma 1:</h4>
+<p>If <span class="math">\(c : A   c ↦ c&#39;\)</span> and <span class="math">\(R_A(c&#39;)\)</span> then R_A(c)$.</p>
+<h5 id="proof">Proof:</h5>
+<p>By induction <strong>on A</strong>. If <span class="math">\(A =\)</span> Bool and (case 1) <span class="math">\(\frac{c ↦ c&#39; ↦* v}{c ↦* v}\)</span> (case 2): <span class="math">\(A = B → C  R_{B→ C}(c&#39;)\)</span> if <span class="math">\(c₁ : B\)</span> and <span class="math">\(R_B(c₁)\)</span>. No we now that <span class="math">\(R_C(c&#39; c₁)\)</span> and <span class="math">\(c  c₁ ↦ c&#39; c₁\)</span> by definition.</p>
+<pre class="agda"><code>R : Types → Closure → Set
+-- R will be defined recursivly on types
+R a b = ?</code></pre>
+<h4 id="lemma-2">Lemma 2:</h4>
+<p>If <span class="math">\(\frac{c : A}{R_A(c)}\)</span></p>
+<h5 id="proof-1">Proof:</h5>
+<p><span class="math">\[ \frac{Γ ⊢ t : A   R_Γ(ρ)}{R_A(t ρ)} \]</span></p>
+<p><span class="math">\[ \frac{}{R_{)}()} \]</span></p>
+<p><span class="math">\[ \frac{R_Γ(ρ)   R_A(c)}{ R_{Γ : A}(ρ, c)} \]</span></p>
+<p>Then using Lemma 1 we have: <span class="math">\(\frac{R_{B → A}((t₀ ρ)   R_B(t, ρ)}{R_A((t₀, ρ) (t, ρ))}\)</span></p>
+<p>$(t₀ t₁ ↦ $</p>
+<p>And all the other cases are similar.</p>
+<p>At this point we know: if $c : $ Bool then <span class="math">\(R_{\text{Bool}}(c)\)</span> so <span class="math">\(∃v  c ↦* v\)</span></p>
+<h4 id="lemma-3">Lemma 3:</h4>
+<p>If <span class="math">\(R_A(c) ⇒ ∃v (c ↦* v)\)</span>. We will not prove Lemma 3 but it's apperantly not complicated. (Hint: for any type <span class="math">\(A\)</span> we can find a special elemet <span class="math">\(f_A : A   R_A(f_A)\)</span>. Usisng this it should be easy to proove the lemma.)</p>
+<p>In this language we add the negation function <code>neg : Bool → Bool</code>.</p>
+<p>We can buil <code>t : Bool</code> of size <span class="math">\(~n\)</span> but when we try to compute it <span class="math">\(t ↦* v\)</span> it will take <span class="math">\(2^{2^{2^{⋱}}}  n\)</span> times.</p>
+<p>This proof is possible and a nice exercise to implement in Agda.</p>
+<p>Next time Ulf Norell will talk about implementing simply typed λ-calculus in Agda.</p>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jakob Larsson jakob@karljakoblarsson.com">
+  <title>Types for Programs and Proofs - DAT350</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="pandoc.css">
+</head>
+<body>
+<header>
+<h1 class="title">Types for Programs and Proofs - DAT350</h1>
+<h2 class="author">Jakob Larsson <script type="text/javascript">
+<!--
+h='&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#106;&#x61;&#x6b;&#x6f;&#98;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#106;&#x61;&#x6b;&#x6f;&#98;&#32;&#x61;&#116;&#32;&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Lp1 2017</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#guest-lecture---ulf-norell">Guest lecture - Ulf Norell</a><ul>
+<li><a href="#fun-with-λ-calculus">Fun with λ-calculus</a></li>
+</ul></li>
+</ul>
+</nav>
+<p>% 2017-10-05</p>
+<h1 id="guest-lecture---ulf-norell">Guest lecture - Ulf Norell</h1>
+<h2 id="fun-with-λ-calculus">Fun with λ-calculus</h2>
+<pre><code>Name = String
+
+Context : Set
+Context = List (Name × Type)
+
+data _∈_ {A : Set} (x : A) : List A → Set where
+  -- atHead : ∀ {xs} → x ∈ x :: xs
+  -- inTail : ∀ {y xs} → x ∈ xs → x ∈ y :: xs
+  zero : ∀ {xs} → x ∈ x :: xs
+  suc : ∀ {y xs} → x ∈ xs → x ∈ y :: xs
+
+data Term (Γ : Context) : Type ⇒ Set where
+  lit : (n : Nat) → Term Γ nat
+  suc : Term Γ (nat =&gt; nat)
+  app : ∀ {A B} (s : Term Γ (A =&gt; B)) (t : Term Γ A) → Term Γ B
+  lam : ∀ {A B} (x : Name) (t : Term ((x , A) :: Γ) B) → Term Γ (A =&gt; B)
+
+</code></pre>
+</body>
+</html>

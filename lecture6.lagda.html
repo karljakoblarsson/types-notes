@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jakob Larsson jakob@karljakoblarsson.com">
+  <title>Lecture 6 - Types for Programs and Proofs - DAT350</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="pandoc.css">
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<header>
+<h1 class="title">Lecture 6 - Types for Programs and Proofs - DAT350</h1>
+<h2 class="author">Jakob Larsson <script type="text/javascript">
+<!--
+h='&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#106;&#x61;&#x6b;&#x6f;&#98;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#106;&#x61;&#x6b;&#x6f;&#98;&#32;&#x61;&#116;&#32;&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Lp1 2017</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#typed-arithmethc-expressions">Typed Arithmethc Expressions</a><ul>
+<li><a href="#value">Value</a></li>
+<li><a href="#progress">Progress</a></li>
+<li><a href="#soundness">Soundness</a></li>
+<li><a href="#type-system">Type system</a></li>
+</ul></li>
+<li><a href="#type-soundness">Type Soundness</a></li>
+<li><a href="#untyped-λ-calculus">Untyped λ-calculus</a><ul>
+<li><a href="#call-by-valuecall-by-name">Call-by-value/Call-by-name</a><ul>
+<li><a href="#cbn">CBN</a></li>
+<li><a href="#cbv">CBV</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h2 id="typed-arithmethc-expressions">Typed Arithmethc Expressions</h2>
+<p>A simple arithmetic language with booleans.</p>
+<pre class="pseudo"><code>t ::= true | false | if t t₁ t₂ | 0 | succ t | pred t | isZero t
+
+v ::= bv | nv
+
+bv ::= true | false
+nv ::= 0 | succ nc
+</code></pre>
+<p>This language has well defined operational semantics. Which I won't list here .</p>
+<h3 id="value">Value</h3>
+<p>is the expected result of a computation.</p>
+<h3 id="progress">Progress</h3>
+<p><span class="math">\(\text{value} t ∨ ∃t&#39;  t ↦ t&#39;\)</span> This is the decidable property of <span class="math">\(t\)</span>. Which is something you want.</p>
+<h3 id="soundness">Soundness</h3>
+<p><span class="math">\(t ↦* t&#39; → ⌉(\text{stuck} t&#39;)\)</span> Not decidable in general.</p>
+<h3 id="type-system">Type system</h3>
+<p>R. Milner &quot;well-typed programs do not go wrong&quot; (1978) Implies soundness.</p>
+<ol type="1">
+<li><span class="math">\(t : T → \text{value} t ∨ ∃t&#39;  t ↦ t&#39;\)</span> <em>progress</em></li>
+<li><span class="math">\(t : T ∨ t ↦ t&#39;   → t&#39; : T\)</span> <em>type presentation</em></li>
+</ol>
+<pre class="pseudo"><code>T ::= Bool | Nat</code></pre>
+<p>This has valid operational semantics as well.</p>
+<p>For a given <code>T</code> and <code>t</code> we expect <code>t : T</code> to be decidable.</p>
+<h2 id="type-soundness">Type Soundness</h2>
+<p>(Milner's theorem)</p>
+<p>$$ t : T t ↦* t'</p>
+<p>both → ⌉( t') t'  ∨ ∃t''   t' ↦ t'' $$</p>
+<p>By induction on <span class="math">\(t ↦* t&#39;\)</span></p>
+<ul>
+<li><span class="math">\(\frac{}{t ↦* t&#39;}\)</span> by (1) <span class="math">\(t \text{value} ∨ ∃t&#39;&#39;   t ↦ t&#39;&#39;\)</span></li>
+<li><span class="math">\(\frac{t ↦ t₁   t₁ ↦* t&#39;}{t ↦* t&#39;}\)</span>, <span class="math">\(t :T\)</span> and <span class="math">\(t ↦ t₁\)</span> by (2)</li>
+</ul>
+<h1 id="untyped-λ-calculus">Untyped λ-calculus</h1>
+<p>(Chapters 4 and 5)</p>
+<pre class="λ-calc"><code>e ::= x | e e | λ x. e
+</code></pre>
+<p><code>x</code> is a variable. <code>e e</code> is and application. <code>λ x e</code> is an abstraction or λ-abstraction.</p>
+<p>It's a general calcullus of <strong>functions</strong>. Alonzo Church (1930)</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Normal calculus</th>
+<th style="text-align: left;">λ-calc</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math">\(f : x ↦ x² + 1\)</span></td>
+<td style="text-align: left;"><span class="math">\(λx. x² + 1\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math">\(f : y ↦ 2y\)</span></td>
+<td style="text-align: left;"><span class="math">\(λy. 2y\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math">\(id : z ↦ z\)</span></td>
+<td style="text-align: left;"><span class="math">\(λz. z\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math">\((λx.e)5\)</span></p>
+<p>value ∨ <span class="math">\(λx.e\)</span></p>
+<p><span class="math">\(∃v   e ↦* v\)</span> This was the first example of a question which can not be decidable by a program.</p>
+<p>This notation was used in LISP (1960) as a practical language. Landin (1964) introduced the closure in A mechanical evaluation of expressions. The Scheme was designed in 1976.</p>
+<h2 id="call-by-valuecall-by-name">Call-by-value/Call-by-name</h2>
+<p><strong>substitution</strong> <code>e(x/e')</code> substitute <code>e'</code> for <code>x</code> in <code>e</code>. <code>e'</code> is <strong>closed</strong> if <code>e'</code> has no free variables.</p>
+<p><code>FV(e)</code> is the set of free variables of <code>e</code> <code>FV : exp → [identifiers]</code></p>
+<p>A variable which is not free is called bound.</p>
+<pre class="pseudo"><code>FV( x ) = { x }
+FV(e₁ e₂) = FV(e₁) ∪ FV(e₂)
+FV(λx. e) = FV(e) ∖ { x }
+</code></pre>
+<p>It is legal to remane a bound variable but it's not legal to rename a free variable.</p>
+<p>There was a big problems with substitutions of this kind: <span class="math">\((λz. x)(y/z)\)</span> This changes the function from a constant function to the identity function. This problem was solved by the introduction of the closure by Landin (1964).</p>
+<h3 id="cbn">CBN</h3>
+<p>Haskell</p>
+<p><span class="math">\[
+\frac{e₀ ↦ e₀&#39;}{e₀ e₁ ↦ e₀&#39; e₂}
+\]</span></p>
+<p><span class="math">\[
+\frac{}{(λx.e) e₁ ↦ e(x/e₁)}
+\]</span></p>
+<h3 id="cbv">CBV</h3>
+<p>ML, OCAML</p>
+<p><span class="math">\[
+\frac{e₀ ↦ e₀&#39;}{e₀ e₁ ↦ e₀&#39; e₂}
+\]</span></p>
+<p><span class="math">\[
+\frac{e  \text{value}  e₁ ↦ e₁&#39;}{e₀ e₁ ↦ e₀ e₁&#39;}
+\]</span></p>
+<p><span class="math">\[
+\frac{e₁  \text{value}}{(λx.e) e₁ ↦ e(x/e₁)}
+\]</span></p>
+<p><span class="math">\(∃v (e ↦* v)\)</span> is undecidable both for CBN and CBV. The behavior of <span class="math">\(↦*\)</span> can be very complex.</p>
+<p><span class="math">\[δ = λx. x x\]</span> This combinator applies a function to itself. This seems wierd but is ok. <span class="math">\(δδ ↦ δδ\)</span>, so <span class="math">\(δδ\)</span> is not a value. <span class="math">\(⌉∃v (δδ ↦* v)\)</span>.</p>
+</body>
+</html>

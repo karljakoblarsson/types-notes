@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jakob Larsson jakob@karljakoblarsson.com">
+  <title>Types for Programs and Proofs - DAT350</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="pandoc.css">
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<header>
+<h1 class="title">Types for Programs and Proofs - DAT350</h1>
+<h2 class="author">Jakob Larsson <script type="text/javascript">
+<!--
+h='&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#106;&#x61;&#x6b;&#x6f;&#98;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#106;&#x61;&#x6b;&#x6f;&#98;&#32;&#x61;&#116;&#32;&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Lp1 2017</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#lecture-8">Lecture 8</a><ul>
+<li><a href="#typed-λ-calculus.">Typed λ-calculus.</a><ul>
+<li><a href="#cbn">CBN</a></li>
+<li><a href="#cbv">CBV</a></li>
+<li><a href="#cbn-cersus-cbv">CBN cersus CBV</a></li>
+<li><a href="#nameless-representation-of-terms">Nameless representation of terms</a></li>
+<li><a href="#β-reduction">Β-reduction</a></li>
+<li><a href="#β-conversion">Β-conversion</a></li>
+<li><a href="#denotational-semantics">Denotational Semantics</a></li>
+</ul></li>
+<li><a href="#simply-typed-λ-calculus">Simply Typed λ-calculus</a><ul>
+<li><a href="#cbn-1">CBN</a></li>
+<li><a href="#type-system">Type System</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="lecture-8">Lecture 8</h1>
+<h2 id="typed-λ-calculus.">Typed λ-calculus.</h2>
+<pre><code>t := x | t t | λ x t</code></pre>
+<h3 id="cbn">CBN</h3>
+<p><span class="math">\[
+\frac{ t₀ ↦ t₀&#39; }{t₀t₁ ↦ t₀&#39;t₁ } \\
+\frac{}{ (λ x t) t₁ ↦ t(x/t₁)} \\
+\]</span></p>
+<h3 id="cbv">CBV</h3>
+<p><span class="math">\[
+\frac{ t₀ ↦ t₀&#39; }{t₀t₁ ↦ t₀&#39;t₁ } \\
+\frac{t₁ \text{value}}{ (λ x t) t₁ ↦ t(x/t₁)} \\
+\frac{ t₁ ↦ t₁&#39;   t₀ \text{value}}{t₀t₁ ↦ t₀t₁&#39; } \\
+\]</span></p>
+<p>Both have a closed substitution</p>
+<p>We don't have normalization <span class="math">\(δ λx x x\)</span> <span class="math">\(¬∃v δδ ⇓ v\)</span> If <span class="math">\(t\)</span> is a closed term. <span class="math">\(∃v^? t ⇓ v\)</span> is then undecidable.</p>
+<h3 id="cbn-cersus-cbv">CBN cersus CBV</h3>
+<p>We may have <span class="math">\(t ⇓_{CBN} v\)</span> and <span class="math">\(¬∃v  t ⇓_{CBV} v\)</span></p>
+<p><span class="math">\(t = (λx λy y) (δδ)\)</span> then <span class="math">\(t ⇓_{CBV} λy y\)</span></p>
+<p>Why is CBN not optimal <span class="math">\((λx … x … x …)t\)</span>. The computation of <span class="math">\(t\)</span> is difficult.</p>
+<p>CBV evaluates <span class="math">\(t ⇓ v\)</span> one time. CBN vill do this evaluation many times.</p>
+<p>We also have Call-by-Need which is used in Haskell where we try to &quot;share&quot; the evaluation. Launchbury</p>
+<p><em>Theorem:</em> <span class="math">\(t ↦* v ↔  t ⇓ v\)</span></p>
+<p><em>Start of Proof:</em> <span class="math">\(t ↦* v ← t ⇓ v\)</span> by induction on <span class="math">\(t ⇓ v\)</span>.</p>
+<p><span class="math">\(v ⇓ v\)</span>, <span class="math">\(t = v\)</span>, <span class="math">\(v ↦* v\)</span> and <span class="math">\(↦*\)</span> is reflexive.</p>
+<p><em>Case 2:</em> <span class="math">\(t ↦* v → t ⇓ v\)</span></p>
+<p><em>Lemma:</em> If <span class="math">\(t ↦ t&#39;\)</span> and <span class="math">\(t&#39; ⇓ v\)</span> then <span class="math">\(t ⇓ v\)</span></p>
+<p>This means that small-step semantics is equvivalent to big-step semantics.</p>
+<p>Substitution is really hard to define, the problem is to describe free and bound variables.</p>
+<h3 id="nameless-representation-of-terms">Nameless representation of terms</h3>
+<p>de Bruijn introduces a nameless representation of terms. (Chapter 5)</p>
+<pre><code>t ::= n | t t | λ t
+n ::= 0 | n + 1
+
+
+Ex:
+λx  (λz  x z) x
+
+Both x refer to the binding in the first lambda. The z is bound in the
+second lambda
+
+λ (λ 1 0) 0</code></pre>
+<p>In this notation the x is represented by both 0 and 1, and one 0 represents z. The numbering is based on the scope. This maps a name representation to a nameless representation. The algorithm starts with an empty list of variables and reads the names and translates those to a nameless representation.</p>
+<pre><code>translate t xs → nameless term
+
+tz (t₀ t₁) xs    =    (tz t₀ xs) (tz t₁ xs)
+tz (λx t) xs     =    (λ  tz  t  (x :: xs)
+tz x (z :: xs)   =    0   if x == z
+tz x (z :: xs)   =    1 + tz x xs   if x ≠ z
+tz x []          =    error(x ++ &quot; is not declared&quot;)</code></pre>
+<h4 id="closures">Closures</h4>
+<p>Landin (1964) For CBV Later Krivine (1985) discoveredan elegant way to do closures for CBN.</p>
+<pre><code>t ::= n | t t | λ t
+
+closures    cl ::= t, r
+environment ρ ::= () | ρ , d
+value       v ::= λt, ρ</code></pre>
+<h5 id="krivine-abstract-machine">Krivine Abstract machine</h5>
+<pre><code>Code    Env    Stack
+t     |  ρ  |    S   ↦   t&#39;  | ρ&#39; | S&#39;
+
+λt    | ρ | ()        ↦
+λt    | ρ | S.cl      ↦   t  | (ρ, cl) | S
+t₀ t₁ | ρ | S         ↦   t₀ | ρ | S.(t₁, ρ)
+0     | (ρ,(t,v)) | S ↦ t | v | S
+n + 1 | (ρ, cl) | S   ↦ n | ρ | S
+</code></pre>
+<p>This abstract machine uses no substitution. This algoritm is a complete description of the computation. This was not a simple result to get to but the evalation rules are simple.</p>
+<h4 id="a-mechanical-ecaluation-of-expressions-1964">A mechanical ecaluation of expressions (1964)</h4>
+<pre><code>d ::= (t, ρ) | d d
+ρ ::= () | ρ, d
+v ::= (λt, ρ)
+
+</code></pre>
+<p><span class="math">\[d ↦ cl&#39;\]</span></p>
+<p><span class="math">\[
+\frac{d0 ↦ d0&#39;}{d0 d1 ↦ d0&#39; d1}
+\]</span></p>
+<p><span class="math">\[
+\frac{}{(λt, ρ) d1 ↦ t (ρ, cl1)}
+\]</span></p>
+<p><span class="math">\[
+\frac{}{(t0 t1, ρ) ↦ (t0, ρ) (t1, ρ)}
+\]</span></p>
+<p><span class="math">\[
+\frac{}{(0, (ρ, cl)) ↦ cl}
+\]</span></p>
+<p><span class="math">\[
+\frac{}{(n + 1, (ρ, cl)) ↦ (n, ρ)}
+\]</span></p>
+<p>This does not cover Β-conversion or Β-reduction because those definitions are a bit &quot;informal&quot; but they work. Barendregt wrote about themin his big book on λ-calculus.</p>
+<h3 id="β-reduction">Β-reduction</h3>
+<p><span class="math">\[
+→_Β   \\frac{}{(λx t)t₁ ↦_Β t(x/t₁)}
+\]</span></p>
+<p><span class="math">\[
+\frac{t →_Β t&#39; }{ t t₁ →_Β t&#39; t₁}
+\]</span></p>
+<p><span class="math">\[
+\frac{t₁ →_Β t₁&#39; }{ t t₁ →_Β t t₁&#39;}
+\]</span></p>
+<p><em>Theorem:</em> <span class="math">\(→_Β\)</span> is confluent.</p>
+<h3 id="β-conversion">Β-conversion</h3>
+<p><span class="math">\[ Y = λf (λx f(x x)) (λx f(x x)) \]</span></p>
+<p><span class="math">\(Y t =_Β t (Y t)\)</span></p>
+<p>This is the Y-combinator which finds the fix-point of any function. This is a remarkable result of λ-calc, in analysis for ex it is often hard to find fix-points.</p>
+<p>In λ-calculus we can encode Booleans and Natural numbers.</p>
+<h3 id="denotational-semantics">Denotational Semantics</h3>
+<p>What is the meaning of a λ-term?</p>
+<p>Dana Scott.</p>
+<p><span class="math">\[t =_Β t&#39;  →  ⟦ t ⟧ = ⟦ t&#39; ⟧\]</span></p>
+<h2 id="simply-typed-λ-calculus">Simply Typed λ-calculus</h2>
+<p>(Chapter 9, but that presentation is not 100% correct. The one in Software foundations Vol. 2 is.)</p>
+<p>Defined by Church (1940). It inspires ML and Haskell as programming languages and the HOL and Isabelle proof systems.</p>
+<pre><code>T, A, B, … ::= Bool | T → T
+
+t ::= true | false | x | t t | λ (x : A) t  -- With names
+                   | n | t t | λ A t  -- Namefree
+
+bV ::= true | false
+fV ::= λ(x : A) t</code></pre>
+<h3 id="cbn-1">CBN</h3>
+<p>Only for <em>closed</em> forms.</p>
+<p><span class="math">\[ \frac{t0 ↦ t0&#39;}{ t0 t1 ↦ t0&#39; t1 } \]</span></p>
+<p><span class="math">\[ \frac{}{ (λ(x : A) t) t₁ ↦ (x/t₁)} \]</span></p>
+<h3 id="type-system">Type System</h3>
+<p><span class="math">\(t : A\)</span>, <span class="math">\(\frac{}{true : Bool}   \frac{}{false : Bool}\)</span></p>
+<p><span class="math">\[
+\frac{ t₀ : A → B  t₁ : A }{t₀ t₁ : B}
+\]</span></p>
+<p><span class="math">\[
+\frac{(x : A) ⊢ t : B}{⊢ λ(x : A) t : A → B }
+\]</span></p>
+<p>We need a context which remembers the types of declared variables. The notation which is used for context is, Γ, Δ, ….</p>
+<p>We need an empty context &quot;no declaration&quot;. And an update of context <span class="math">\(Γ, x : A\)</span></p>
+<p>A context is a partial function from Variables to types <code>Var → Maybe Type</code> The empty context is a function which is never defined.</p>
+<pre><code>(Γ, x : A)(y) = if x == y then A else Γ(y)</code></pre>
+<p>A typing judgement is of the form <code>Γ ⊢ t : A</code> in the context <code>Γ t</code> has type <code>A</code>.</p>
+<pre><code>Γ(x) defined Γ(x) = A
+---------------------
+      Γ ⊢ x : A
+
+   γ x : a ⊢ t : b
+----------------------
+γ ⊢ λ(x : a) t : a → b
+
+Γ ⊢ t₀ : A → B    Γ ⊢ t₁ : A
+----------------------------
+       Γ ⊢ t₀ t₁ : B</code></pre>
+<p>Namefree presentation:</p>
+<pre><code>Γ ::= () | Γ . A
+
+
+-------------
+Γ . A ⊢ 0 : A
+
+   Γ ⊢ n : A
+---------------
+Γ B ⊢ n + 1 : A
+
+ Γ . A ⊢ t : B
+----------------
+Γ ⊢ λ At : A → B
+
+Γ ⊢ t₀ : A → B    Γ ⊢ t₁ : A
+----------------------------
+       Γ ⊢ t₀ t₁ : B</code></pre>
+<p>Church showed that you can represent ∃ and ∀ as constants in simply typed λ-calculus. This is used in the HOL proof system.</p>
+</body>
+</html>

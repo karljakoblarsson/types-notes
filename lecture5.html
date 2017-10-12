@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Jakob Larsson jakob@karljakoblarsson.com">
+  <title>Types for Programs and Proofs - DAT350</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="pandoc.css">
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<header>
+<h1 class="title">Types for Programs and Proofs - DAT350</h1>
+<h2 class="author">Jakob Larsson <script type="text/javascript">
+<!--
+h='&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#106;&#x61;&#x6b;&#x6f;&#98;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#106;&#x61;&#x6b;&#x6f;&#98;&#32;&#x61;&#116;&#32;&#x6b;&#x61;&#114;&#108;&#106;&#x61;&#x6b;&#x6f;&#98;&#108;&#x61;&#114;&#x73;&#x73;&#x6f;&#110;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Lp1 2017</h3>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#lecture-5">Lecture 5</a><ul>
+<li><a href="#strong-progress-theorem">Strong progress Theorem</a><ul>
+<li><a href="#lemma">Lemma</a></li>
+</ul></li>
+<li><a href="#correctness-of-a-compiler">Correctness of a compiler</a><ul>
+<li><a href="#one-step-evaluation">One step evaluation</a></li>
+<li><a href="#correctness">Correctness</a></li>
+<li><a href="#theorem">Theorem</a></li>
+</ul></li>
+<li><a href="#determinism">Determinism</a></li>
+<li><a href="#confluence">Confluence</a><ul>
+<li><a href="#this-is-called-normalization">This is called normalization</a></li>
+</ul></li>
+<li><a href="#untyped-expression">Untyped expression</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="lecture-5">Lecture 5</h1>
+<p>A good complement book is Software Foundations Vol2 - Small Step operational Semantics</p>
+<p>Normal form</p>
+<p><span class="math">\(Nf e   ¬∃e&#39; e ↦ e&#39;\)</span> its either <code>Value e</code> or <code>const n</code></p>
+<h2 id="strong-progress-theorem">Strong progress Theorem</h2>
+<p><span class="math">\(∀e   \textrm{Value} e ∨ ∃e&#39; e ↦ e&#39;\)</span></p>
+<p>It means that a value is either in normal form or it's possible to evaluate it further.</p>
+<p>How do we prove this.</p>
+<h3 id="lemma">Lemma</h3>
+<p><span class="math">\[
+\frac{`Value` e₀   e₁ ↦ e&#39;₁}{`add` e₀ e₁ ↦ `add` e₀ e&#39;₁}
+\]</span></p>
+<p>By induction one</p>
+<pre><code>e = const n -- e is a vlue
+e = add e₀ e₁ -- by IH on e₀. 
+e = add e₀ e₁ -- or by IH on e₁. 
+
+1) Value e₀ ∨ Value e₁
+2) Value e₀ ∧ ∃e&#39;₁ e₁ ↦ e&#39;₁ -- By using the lemma
+3) ∃e&#39;₀   e₀ ↦ e&#39;₀
+   e = add e₀ e₁ ↦ add e&#39;₀ e₁</code></pre>
+<h2 id="correctness-of-a-compiler">Correctness of a compiler</h2>
+<p>This is a nice thing to do in Agda.</p>
+<p>McCarthy and J. Painter (1967) published a paper about Correctness of a compiler for arithmetic expressions.</p>
+<p>Then it took forty years before the principles were used on C, a 'real' language.</p>
+<p>We will prove this for arithmetic.</p>
+<p>This is a simple machine with a stack. The stack is just a list of Nats. <span class="math">\(S := n : S | []\)</span></p>
+<p><code>code</code> is a list of statements.</p>
+<pre><code>exp = const n | add exp exp
+
+code = LOAD n code | ADD code | HALT
+
+-- LOAD n
+-- It pushes n on top of the stack and then considers the rest of the code.
+
+-- ADD
+-- Adds the top two element of the stack and pushes the result.
+
+complie : expt → code
+compile e = comp e HALT
+
+comp : exp → code → code
+comp (const n) cd = LOAD n cd
+comp (add e₀ e₁) cd = comp e₁ (comp e₀ (ADD cd))</code></pre>
+<h3 id="one-step-evaluation">One step evaluation</h3>
+<p><span class="math">\[
+\frac{}{LOAD n cd, S ↦ cd, n :: S}
+\]</span></p>
+<p><span class="math">\[
+\frac{}{ADD cd, n₁ :: (n₀ :: S) ↦ cd, (₁ + n₀) :: S}
+\]</span></p>
+<h3 id="correctness">Correctness</h3>
+<p>Semantics:</p>
+<pre><code>valOf exp → Nat
+valOf (const n) = n
+valOf (add e₀ e₁) = valOf e₀ + valOf e₁
+
+-- valOf e is usally written [[ e ]]</code></pre>
+<h3 id="theorem">Theorem</h3>
+<pre><code>compile e, [] ↦* HALT, [[e]]:[]</code></pre>
+<p>This is not possible to proove with induction. We need to strengthen the statement first.</p>
+<p>Theorem: <span class="math">\(∀cd, ∀S\)</span></p>
+<pre><code>comp e cd, S ↦* cd, [[e]] : S
+
+∀e∀S, cd   emop e cd ↦* cd, [[e]]:S
+
+S = []   cd = HALT   compile e ↦* HALT, [[e]]e:[]
+</code></pre>
+<p>By induction on e:</p>
+<pre><code>e = const e   LOAD n cd, S ↦ cd, n:S
+e = add e₀ e₁   comp e₁ (comp e₀ (ADD cd)), S
+
+IH on e₁   ↦* comp e (ADD cd), [[e]] : S
+IH on e₀   ↦* ADD cd [[e₀]] : ([[e₁]] : S)
+           ↦ cd, ([[e₀]] + [[e₁]]) : S
+           </code></pre>
+<p>There is not a clear distinction between syntax and semantics here.</p>
+<h2 id="determinism">Determinism</h2>
+<p>There is at most one way to reduce a term/expression. Direct proof by induction.</p>
+<p><span class="math">\[
+e ↦ e&#39; ∨ e ↦ e&#39;&#39;   → e&#39; = e&#39;&#39;
+\]</span></p>
+<p>Its easy to have a nondeterministic evaluation. For example, define two different reductions for <code>add</code> one wich evaluates e₀, one that evaluates e₁ and one which evaluates add with a constant term.</p>
+<h2 id="confluence">Confluence</h2>
+<p>The rewriting theory. It's about abstract rewriting.</p>
+<p><strong>Diamond property</strong> of a relation R <span class="math">\[
+R a b ∧ R a c → ∃d (R b d ∧ R c d)
+\]</span></p>
+<p><strong>Definition</strong>: ↦ is confluent iff ↦* had the diamond property.</p>
+<p>Definition of ↦* <span class="math">\[
+\frac{e ↦ e&#39;   e&#39; ↦* e&#39;&#39;}{e ↦* e&#39;&#39;}
+\]</span></p>
+<p><strong>Proposition</strong>: if <span class="math">\(e\)</span> is in normal form and <span class="math">\(e ↦* e&#39;\)</span> then <span class="math">\(e = e&#39;\)</span> - By case on <span class="math">\(e ↦* e&#39;\)</span> 1) <span class="math">\(e = e&#39;\)</span> 2) Not possible <span class="math">\(e\)</span> noraml form <span class="math">\(e ↦ e&#39;\)</span> ⊥</p>
+<p><strong>Theorem</strong>: Iff ↦ is confluent and <span class="math">\(e ↦* e&#39;\)</span> <span class="math">\(e ↦* e&#39;&#39;\)</span> <span class="math">\(e&#39;, e&#39;&#39;\)</span> normal form then <span class="math">\(e&#39; = e&#39;&#39;\)</span>.</p>
+<p><strong>Proof</strong>:</p>
+<p>It does not mater how we do the computation in this system. It will always terminate in normal form.</p>
+<p>An example of where this does not hold:</p>
+<pre><code>e := const n | add e e | loop
+-- loop ↦ loop </code></pre>
+<p><code>loop</code> does not satisfy <code>∃e' loop ↦* e' ∧ e' normal form</code></p>
+<p><strong>Theorem</strong>: even with <code>loop</code> ↦ is still confluent.</p>
+<p><span class="math">\(↦*\)</span> is reflexive transitive <span class="math">\(↦\)</span> is confluent <span class="math">\(↦*\)</span> has the diamond property.</p>
+<h3 id="this-is-called-normalization">This is called normalization</h3>
+<pre><code>∃e&#39; loop ↦* e&#39; ∧ e&#39; normal form</code></pre>
+<p><strong>Theorem</strong>: if <span class="math">\(R\)</span> is reflexive, transitive, with the diamond property, then <span class="math">\(S a b\)</span> is defined as <span class="math">\(∃c [R a c ∧ R b c]\)</span> is an equivalence relation.</p>
+<p><span class="math">\(↦*\)</span> is an equvivalence relation if <span class="math">\(↦\)</span> is confluent.</p>
+<h2 id="untyped-expression">Untyped expression</h2>
+<p>Introduce booleans in the language.</p>
+<pre><code>e := true | false | if e₀ e₁ e₂ | zero | succ e | pred e | isZero e</code></pre>
+<p>To reduce the if expression you first try to reduce e₀. If it's true you reduce e₁, if it's false you reduce e₂.</p>
+<p>The values in this language are:</p>
+<pre><code>bvalue := true | false
+nvalues := zero | succ nvalue</code></pre>
+<p>All values are normal form.</p>
+<p>Examples of values which are not in normal form:</p>
+<pre><code>isZero ture
+succ false</code></pre>
+<p>A stuck e is a invalid program state.</p>
+<pre><code>stuck e
+
+¬ value e
+∧ nf e</code></pre>
+<p>Next time we will introduce the notion of types and a type system.</p>
+</body>
+</html>
