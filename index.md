@@ -12,6 +12,7 @@ The notes are stored on
 Please improve them and send a pull request!
 
 
+- [Lecture 1](types.html "Lecture 1") 
 - [Lecture 2 (Agda)](lecture2.agda "Lecture 2")
 - [Lecture 3 (Agda)](lecture3.agda "Lecture 3")
 - [Lecture 4 (Agda)](lecture4.agda "Lecture 4")
