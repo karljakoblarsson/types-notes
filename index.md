@@ -3,14 +3,18 @@
 % Lp1 2017
 
 Notes taken during the Chalmers course Types for Programs and Proofs.
-They are quite messy and are lacking most of the proofs. I tried to
-write down any important or unintuitive step in proofs.
+They are written during the lectures and not edited afterwards so they
+are quite messy.  Most of the proofs are missing but I tried to write
+down any important or unintuitive step in proofs.
 
-The notes are stored on 
+The notes are hosted on 
 [github](https://github.com/karljakoblarsson/types-notes
 "karljakoblarsson/types-notes").
 Please improve them and send a pull request!
 
+As you cans see lecture 4 appears two times but the content is
+different. Something is wrong but hopefully most of the content is
+there.
 
 - [Lecture 1](types.html "Lecture 1") 
 - [Lecture 2 (Agda)](lecture2.agda "Lecture 2")
